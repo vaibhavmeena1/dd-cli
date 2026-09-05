@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  launcher-core:
+    name: Launcher core checks
+    runs-on: macos-14
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.1
+
+      - name: Verify Apple Silicon runner
+        run: test "$(uname -s)-$(uname -m)" = "Darwin-arm64"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting, lint, and types
+        run: bun run check
+
+      - name: Test launcher core
+        run: bun test
+
+      - name: Compile development binary
+        run: bun run build
+
+      - name: Smoke-test compiled binary
+        run: |
+          ./dist/deputydev2 --version
+          ./dist/deputydev2 harnesses

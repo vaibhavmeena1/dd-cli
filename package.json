@@ -1,0 +1,38 @@
+{
+  "name": "deputydev-cli",
+  "version": "0.0.0-dev",
+  "description": "Native DeputyDev launcher for supported coding harnesses",
+  "private": true,
+  "type": "module",
+  "module": "src/index.ts",
+  "bin": {
+    "deputydev2": "src/index.ts"
+  },
+  "packageManager": "bun@1.4.1",
+  "engines": {
+    "bun": ">=1.4.1"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --compile --format=esm --bytecode --sourcemap=external --no-compile-autoload-dotenv --no-compile-autoload-bunfig --target=bun-darwin-arm64 --define 'BUILD_VERSION=\"0.0.0-dev\"' --define 'BUILD_KIND=\"dev\"' --define 'BUILD_TARGET=\"darwin-arm64\"' --define 'BUILD_COMMIT=\"local\"' --define 'BUILD_SERVICE_ORIGIN=\"http://localhost:3000\"' --outfile dist/deputydev2",
+    "test": "bun test",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.pi-resources.json",
+    "lint": "biome lint .",
+    "format": "biome format . --write",
+    "format:check": "biome format .",
+    "check": "bun run typecheck && biome ci ."
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "commander": "14",
+    "consola": "^3.4.2",
+    "picocolors": "^1.1.1",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "@earendil-works/pi-coding-agent": "0.85.0",
+    "@types/bun": "^1.4.0",
+    "typescript": "^7.0.2"
+  }
+}
