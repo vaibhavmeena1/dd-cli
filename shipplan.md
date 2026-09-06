@@ -9,7 +9,7 @@
 - [x] Pinned Bun 1.4.1 project metadata and synchronized the frozen lockfile.
 - [x] Added compile-time build identity fallbacks and validated local/build service-origin handling.
 - [x] Added a native `darwin-arm64` development build with `--compile --format=esm --bytecode`, external source maps, and compiled autoload disabled.
-- [x] Confirmed the current top-level-await entrypoint compiles and the resulting binary returns `0.0.0-dev` from `--version`.
+- [x] Confirmed the current top-level-await entrypoint compiles and the resulting binary returns `0.1.0-dev` from `--version`.
 - [x] Added strict typechecking plus Biome formatting/linting gates.
 - [x] Added Apple Silicon CI for frozen dependency install, quality checks, native compilation, and smoke execution.
 - [x] Established separate launcher/update/hold/staging path contracts without implementing any state writer.
@@ -41,7 +41,7 @@ Ship one signed, compressed native binary for Apple Silicon macOS. Keep ordinary
 
 A mandatory update is the exception: when the cached or freshly accepted manifest says `current < minSupported`, download/verify/swap in the foreground and re-exec before launching the harness.
 
-This design accepts one explicit trade-off: a newly banned release may receive one final run before a refreshed manifest reaches the local cache. That is preferable to imposing 300–700 ms of network latency on every transparent harness launch, especially `deputydev2 pi -p` in loops and pipelines.
+This design accepts one explicit trade-off: a newly banned release may receive one final run before a refreshed manifest reaches the local cache. That is preferable to imposing 300–700 ms of network latency on every transparent harness launch, especially `ddcli pi -p` in loops and pipelines.
 
 ---
 
@@ -54,7 +54,7 @@ This plan and `launcher-plan.md` share one contract. Update both in the same cha
 | Contract | Value |
 |---|---|
 | Stable application ID | `deputydev` |
-| Current executable | `deputydev2` |
+| Current executable | `ddcli` |
 | Home override | `DEPUTYDEV_HOME` |
 | Default home | `~/.deputydev` |
 | Pi agent directory | `${DEPUTYDEV_HOME}/pi` (default `~/.deputydev/pi`) |
@@ -136,7 +136,7 @@ Do not merge launcher and updater state into one atomic JSON file; independent r
 The primary channel is a standalone Bun executable installed to a user-owned path:
 
 ```text
-~/.deputydev/bin/deputydev2
+~/.deputydev/bin/ddcli
 ```
 
 Properties:
@@ -201,7 +201,7 @@ The decoded payload contains:
   "publishedAt": "2026-09-04T10:00:00Z",
   "artifacts": {
     "darwin-arm64": {
-      "url": "https://github.com/example/deputydev/releases/download/v1.4.2/deputydev2-darwin-arm64.gz",
+      "url": "https://github.com/example/deputydev/releases/download/1.4.2/ddcli-darwin-arm64.gz",
       "sha256": "<compressed sha256>",
       "size": 16000000,
       "sha256Binary": "<decompressed binary sha256>",
@@ -282,7 +282,7 @@ The client-config contract must follow these rules:
 
 ## 4. Build and versioning
 
-Use conventional commits and release-please. Release creation and conditional build/publish jobs stay in the same default-branch workflow because a release created with the default `GITHUB_TOKEN` does not trigger a separate downstream workflow.
+Use conventional commits. For the distribution MVP, a maintainer creates a matching GitHub pre-release manually; `.github/workflows/release.yml` runs from the resulting `release.published` event. The package version, tag, and release title use the same canonical SemVer value without a `v` prefix. Release automation such as release-please can be reconsidered after the manual contract has proven stable.
 
 Compile-time constants are the source of runtime identity:
 
@@ -309,9 +309,9 @@ bun build src/index.ts \
   --define 'BUILD_VERSION="1.4.2"' \
   --define 'BUILD_KIND="binary"' \
   --define 'BUILD_TARGET="darwin-arm64"' \
-  --define 'BUILD_COMMIT="abc1234"' \
+  --define 'BUILD_COMMIT="0123456789abcdef0123456789abcdef01234567"' \
   --define "BUILD_SERVICE_ORIGIN=\"${DEPUTYDEV_SERVICE_ORIGIN}\"" \
-  --outfile dist/deputydev2-darwin-arm64
+  --outfile dist/ddcli-darwin-arm64
 ```
 
 The build must fail if `DEPUTYDEV_SERVICE_ORIGIN` is absent or invalid. Runtime endpoint URLs are derived from `BUILD_SERVICE_ORIGIN` and fixed paths rather than maintained as unrelated hostnames.
@@ -331,10 +331,10 @@ TypeScript harness resources imported with `with { type: "file" }` are read via 
 ```text
 ~/.deputydev/
 ├── bin/
-│   ├── deputydev2
-│   └── deputydev2.prev
+│   ├── ddcli
+│   └── ddcli.prev
 ├── staged/
-│   ├── deputydev2
+│   ├── ddcli
 │   └── meta.json
 ├── locks/
 │   ├── update.lock
@@ -501,13 +501,13 @@ Phase 0 must prove with process-group inspection that the worker survives parent
 2. Confirm the requested version is still eligible/latest.
 3. Acquire the update lock.
 4. Re-check staged metadata.
-5. Download `*.gz` to `staged/deputydev2.gz.part` with a five-minute timeout.
+5. Download `*.gz` to `staged/ddcli.gz.part` with a five-minute timeout.
 6. Hash compressed bytes while streaming; verify `sha256` and `size`.
-7. Stream through `DecompressionStream("gzip")` into `staged/deputydev2.part`.
+7. Stream through `DecompressionStream("gzip")` into `staged/ddcli.part`.
 8. Hash decompressed bytes; verify `sha256Binary` and `sizeBinary`.
 9. Set mode `0755`.
-10. Self-test with `DEPUTYDEV_INTERNAL_NO_UPDATE=1 deputydev2.part --version`.
-11. Rename the binary into `staged/deputydev2`.
+10. Self-test with `DEPUTYDEV_INTERNAL_NO_UPDATE=1 ddcli.part --version`.
+11. Rename the binary into `staged/ddcli`.
 12. Write `staged/meta.json` last with version, both hashes/sizes, sequence, and timestamp.
 13. Remove compressed/temp files and release the lock.
 
@@ -531,7 +531,7 @@ After the user command exits, but before returning its termination status:
 4. Re-read and validate metadata.
 5. Confirm the staged binary exists and the metadata version differs from the live version.
 6. Confirm `process.execPath` and the managed binary are the same device/inode.
-7. Hash `staged/deputydev2` immediately before rename and compare `sha256Binary` and `sizeBinary`.
+7. Hash `staged/ddcli` immediately before rename and compare `sha256Binary` and `sizeBinary`.
 8. Self-test again only if metadata is stale or policy requires it.
 9. Move the live binary to `.prev` and staged binary to live, restoring `.prev` if the second rename fails.
 10. Delete staged metadata and release the lock.
@@ -572,7 +572,7 @@ Mandatory re-exec inherits stdio and sets `DEPUTYDEV_SWAPPED=<version>` only for
 
 ## 11. Rollback and hold behavior
 
-`deputydev2 rollback` is gate-exempt and uses the update lock. It verifies the managed installation, atomically restores `bin/deputydev2.prev`, preserves the displaced binary as a possible next rollback, and clears staged files.
+`ddcli rollback` is gate-exempt and uses the update lock. It verifies the managed installation, atomically restores `bin/ddcli.prev`, preserves the displaced binary as a possible next rollback, and clears staged files.
 
 After a successful rollback, write:
 
@@ -586,7 +586,7 @@ After a successful rollback, write:
 
 Default hold duration is 24 hours. The gate honors an unexpired hold only for that exact version, prints a one-line warning, and reports the expiry. `rollback` prints the same expiry so the user knows the gate will resume.
 
-An expired/invalid hold is removed. A hold suppresses mandatory update but not explicit `deputydev2 update` initiated by the user.
+An expired/invalid hold is removed. A hold suppresses mandatory update but not explicit `ddcli update` initiated by the user.
 
 Without this marker, rollback would immediately update back to the release the user was escaping.
 
@@ -595,11 +595,11 @@ Without this marker, rollback would immediately update back to the release the u
 ## 12. Public and hidden commands
 
 ```text
-deputydev2 --version
-deputydev2 update
-deputydev2 update --check
-deputydev2 rollback
-deputydev2 __stage-update <version>  # hidden
+ddcli --version
+ddcli update
+ddcli update --check
+ddcli rollback
+ddcli __stage-update <version>  # hidden
 ```
 
 Harness dispatch happens before Commander, as specified in `launcher-plan.md`. Commander receives launcher-owned arguments only and can safely own updater commands.
@@ -616,71 +616,49 @@ Use plain stderr output in recovery paths. `performBlockingUpdate` shows a simpl
 
 ## 13. GitHub Actions and release assets
 
-As of this plan revision, use current official action majors:
+The implemented workflows use:
 
 - `actions/checkout@v7`
-- `actions/attest@v4` for new provenance attestations
+- `actions/attest-build-provenance@v3`
 - `oven-sh/setup-bun@v2`
-- `actions/upload-artifact@v4`
-- `actions/download-artifact@v4`
-- `googleapis/release-please-action@v4`
 
-Re-verify majors when implementation begins and pin full commit SHAs if repository policy requires supply-chain hardening.
+Re-verify action majors periodically and pin full commit SHAs if repository policy requires stronger workflow supply-chain controls.
 
-Use an explicit Apple Silicon runner label such as `macos-14` and assert architecture before smoke tests. Load the service origin from a GitHub Actions environment variable, with a secret fallback for deployments that choose to store it there:
-
-```yaml
-runs-on: macos-14
-environment: production
-env:
-  DEPUTYDEV_SERVICE_ORIGIN: ${{ vars.DEPUTYDEV_SERVICE_ORIGIN || secrets.DEPUTYDEV_SERVICE_ORIGIN }}
-steps:
-  - run: test "$(uname -m)" = "arm64"
-  - name: Validate service origin
-    run: test -n "${DEPUTYDEV_SERVICE_ORIGIN}"
-```
-
-Use GitHub environments to provide different values for local-equivalent CI, staging, and production release jobs. The origin is normally non-secret and should use the Actions variable; the secret fallback supports repository policy without requiring workflow changes. Never print the complete environment.
-
-GitHub currently maps standard `macos-14` to arm64, but the assertion protects against label drift. Avoid Intel `*-large` labels for execution smoke tests.
+Both CI and release jobs use `macos-15` and assert `Darwin-arm64`. The release job uses the `production` GitHub Environment and reads the non-secret `DEPUTYDEV_SERVICE_ORIGIN` environment variable from `vars`. The value must be an HTTPS origin only; there is intentionally no secret fallback.
 
 ### Release workflow
 
-One default-branch workflow:
+`.github/workflows/release.yml` is triggered by publishing a manually created GitHub pre-release and also provides a controlled `workflow_dispatch` recovery path:
 
-1. release-please creates the release/tag.
-2. A conditional arm64 build job checks out the exact commit, loads `DEPUTYDEV_SERVICE_ORIGIN` from the selected GitHub environment, and performs a frozen install.
-3. Verify tag version equals `package.json` and validate the service origin before compiling.
-4. Run typecheck, architecture rules, fake-harness tests, updater tests, and the exact release compile command.
-5. Ad-hoc sign during MVP or Developer ID sign/notarize for broad distribution; verify with `codesign -vvv --verify`.
-6. Smoke-test the compiled binary and PTY behavior on arm64.
-7. Hash the signed binary.
-8. Gzip the signed binary reproducibly.
-9. Generate compressed and decompressed metadata.
-10. Upload binary `.gz`, external source map, checksums, and `update-artifact.json` to the GitHub Release.
-11. Create provenance with `actions/attest@v4` for the published artifacts.
+1. Check out the exact release tag with full history.
+2. Require canonical SemVer without a `v` prefix and exact equality between package version, tag, and release title.
+3. Require the release to begin as a pre-release and verify its commit is an ancestor of `main`.
+4. Validate the production service origin before dependency installation or compilation.
+5. Run frozen install, typechecking, Biome, launcher tests, installer tests, and shell syntax checks.
+6. Compile the production `darwin-arm64` executable through `scripts/build-release.ts`.
+7. Verify architecture, ad-hoc sign, verify the signature, and smoke-test the exact version and harness list.
+8. Gzip reproducibly and generate dual hashes, sizes, and release metadata.
+9. Refuse existing assets by default, upload all assets, and create GitHub provenance for the executable archive.
+10. Promote stable SemVer versions to normal/latest only after every preceding step succeeds. SemVer prereleases remain pre-releases.
 
-The release upload job uses the same workflow because releases created with the default token do not trigger separate release workflows.
+A manual recovery run may explicitly enable `replace_assets`; normal release runs never clobber assets.
 
-### Build-derived metadata
+### Release assets and metadata
 
-`update-artifact.json` contains only:
+Every release contains:
 
-```jsonc
-{
-  "artifacts": {
-    "darwin-arm64": {
-      "url": ".../deputydev2-darwin-arm64.gz",
-      "sha256": "<compressed>",
-      "size": 16000000,
-      "sha256Binary": "<binary>",
-      "sizeBinary": 45000000
-    }
-  }
-}
+```text
+ddcli-darwin-arm64.gz
+ddcli-darwin-arm64.map
+checksums.txt
+release-metadata.json
+VERSION
+install.sh
 ```
 
-The maintainer copies these values into a draft manifest, sets policy fields, runs the offline verification/signing script, and publishes the resulting envelope only after release URLs resolve.
+`checksums.txt` identifies both the compressed archive and decompressed `ddcli-darwin-arm64` executable. `release-metadata.json` records the version, target, full commit, production environment identifier, archive URL, and both hashes and sizes. It does not expose credentials or other secret environment values.
+
+The future updater's signed distribution manifest remains separate. Its offline signing flow can consume the verified release metadata after all release URLs resolve.
 
 ---
 
@@ -699,7 +677,7 @@ The manual installer:
 9. verifies code signature and `--version`
 10. atomically renames into place
 11. explains how to add `~/.deputydev/bin` to PATH
-12. warns if `command -v deputydev2` resolves elsewhere
+12. warns if `command -v ddcli` resolves elsewhere
 
 A checksum file fetched from the same origin as the artifact detects corruption but not origin compromise. Document `gh attestation verify` as the stronger provenance path for users who require it, and keep manifest signature verification as the updater's independent trust anchor.
 

@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -15,8 +16,8 @@ concurrency:
 jobs:
   launcher-core:
     name: Launcher core checks
-    runs-on: macos-14
-    timeout-minutes: 10
+    runs-on: macos-15
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
@@ -36,13 +37,17 @@ jobs:
       - name: Check formatting, lint, and types
         run: bun run check
 
-      - name: Test launcher core
+      - name: Test launcher and installer
         run: bun test
+
+      - name: Check installer shell syntax
+        run: sh -n install.sh
 
       - name: Compile development binary
         run: bun run build
 
       - name: Smoke-test compiled binary
         run: |
-          ./dist/deputydev2 --version
-          ./dist/deputydev2 harnesses
+          test "$(./dist/ddcli --version)" = "0.1.0-dev"
+          ./dist/ddcli harnesses
+          test "$(lipo -archs ./dist/ddcli)" = "arm64"

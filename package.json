@@ -1,12 +1,12 @@
 {
   "name": "deputydev-cli",
-  "version": "0.0.0-dev",
+  "version": "0.1.0",
   "description": "Native DeputyDev launcher for supported coding harnesses",
   "private": true,
   "type": "module",
   "module": "src/index.ts",
   "bin": {
-    "deputydev2": "src/index.ts"
+    "ddcli": "src/index.ts"
   },
   "packageManager": "bun@1.4.1",
   "engines": {
@@ -14,8 +14,12 @@
   },
   "scripts": {
     "dev": "bun run src/index.ts",
-    "build": "bun build src/index.ts --compile --format=esm --bytecode --sourcemap=external --no-compile-autoload-dotenv --no-compile-autoload-bunfig --target=bun-darwin-arm64 --define 'BUILD_VERSION=\"0.0.0-dev\"' --define 'BUILD_KIND=\"dev\"' --define 'BUILD_TARGET=\"darwin-arm64\"' --define 'BUILD_COMMIT=\"local\"' --define 'BUILD_SERVICE_ORIGIN=\"http://localhost:3000\"' --outfile dist/deputydev2",
+    "build": "bun build src/index.ts --compile --format=esm --bytecode --sourcemap=external --no-compile-autoload-dotenv --no-compile-autoload-bunfig --target=bun-darwin-arm64 --define 'BUILD_VERSION=\"0.1.0-dev\"' --define 'BUILD_KIND=\"dev\"' --define 'BUILD_TARGET=\"darwin-arm64\"' --define 'BUILD_COMMIT=\"local\"' --define 'BUILD_SERVICE_ORIGIN=\"http://localhost:3000\"' --outfile dist/ddcli",
+    "build:release": "bun run scripts/build-release.ts",
+    "release:validate": "bun run scripts/validate-release.ts",
+    "release:metadata": "bun run scripts/generate-release-metadata.ts",
     "test": "bun test",
+    "test:installer": "bun test tests/installer",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.pi-resources.json",
     "lint": "biome lint .",
     "format": "biome format . --write",

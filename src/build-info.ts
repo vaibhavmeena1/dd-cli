@@ -16,7 +16,7 @@ const configuredServiceOrigin =
     : BUILD_SERVICE_ORIGIN;
 
 export const BUILD_INFO = Object.freeze({
-  version: typeof BUILD_VERSION === "undefined" ? "0.0.0-dev" : BUILD_VERSION,
+  version: typeof BUILD_VERSION === "undefined" ? "0.1.0-dev" : BUILD_VERSION,
   kind: buildKind,
   target:
     typeof BUILD_TARGET === "undefined" ? `${process.platform}-${process.arch}` : BUILD_TARGET,

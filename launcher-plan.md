@@ -37,28 +37,28 @@ The adapters preserve forwarded harness argument tokens. Pi has an additive MCP 
 
 ## 1. Goal
 
-Build a native CLI launcher named **`deputydev2`** that starts supported coding harnesses with DeputyDev-managed configuration, environment variables, extensions, plugins, skills, prompts, themes, and future harness-specific resources.
+Build a native CLI launcher named **`ddcli`** that starts supported coding harnesses with DeputyDev-managed configuration, environment variables, extensions, plugins, skills, prompts, themes, and future harness-specific resources.
 
 The core user experience is:
 
 ```text
-deputydev2 pi
-deputydev2 opencode
+ddcli pi
+ddcli opencode
 ```
 
 `opencode2` remains a compatibility alias, not the stable harness ID:
 
 ```text
-deputydev2 opencode2 run --prompt "Fix the failing build"
+ddcli opencode2 run --prompt "Fix the failing build"
 ```
 
 Everything after the harness token is forwarded to that harness. The launcher owns preparation and process execution; the selected harness owns its UI, command behavior, sessions, and termination status.
 
 ```text
-deputydev2 pi --model openai/gpt-4o "Review this repository"
-deputydev2 pi -p -- "- Summarize these points"
-deputydev2 opencode run --prompt "Fix the failing build"
-deputydev2 opencode --continue
+ddcli pi --model openai/gpt-4o "Review this repository"
+ddcli pi -p -- "- Summarize these points"
+ddcli opencode run --prompt "Fix the failing build"
+ddcli opencode --continue
 ```
 
 ---
@@ -72,7 +72,7 @@ This document and `shipplan.md` must use one set of product-level contracts. If 
 | Contract | Value |
 |---|---|
 | Stable application ID | `deputydev` |
-| Current command | `deputydev2` |
+| Current command | `ddcli` |
 | Display name | `DeputyDev` |
 | Home override | `DEPUTYDEV_HOME` |
 | Default home | `~/.deputydev` |
@@ -168,7 +168,7 @@ Pi exposes repeatable resource flags suitable for per-invocation activation:
 - `--append-system-prompt <text-or-path>`
 - `--session-dir <path>`
 
-It also exposes `PI_CODING_AGENT_DIR` and `PI_CODING_AGENT_SESSION_DIR`. Every `deputydev2 pi` invocation, including Pi package commands, overrides inherited values with `${DEPUTYDEV_HOME}/pi` and `${DEPUTYDEV_HOME}/pi/sessions`. DeputyDev should use explicit flags for DeputyDev-owned resources and must not mutate the user's normal `~/.pi/agent` settings.
+It also exposes `PI_CODING_AGENT_DIR` and `PI_CODING_AGENT_SESSION_DIR`. Every `ddcli pi` invocation, including Pi package commands, overrides inherited values with `${DEPUTYDEV_HOME}/pi` and `${DEPUTYDEV_HOME}/pi/sessions`. DeputyDev should use explicit flags for DeputyDev-owned resources and must not mutate the user's normal `~/.pi/agent` settings.
 
 ### OpenCode
 
@@ -197,16 +197,16 @@ Do not implement an assumption until the spike records a command, version, obser
 ### Harness launches
 
 ```text
-deputydev2 pi [pi arguments...]
-deputydev2 opencode [opencode arguments...]
-deputydev2 opencode2 [opencode arguments...]  # alias
+ddcli pi [pi arguments...]
+ddcli opencode [opencode arguments...]
+ddcli opencode2 [opencode arguments...]  # alias
 ```
 
 Rules:
 
-1. `deputydev2 --help` and `deputydev2 --version` belong to DeputyDev.
-2. `deputydev2 pi --help` launches `pi --help`.
-3. `deputydev2 opencode --help` launches `opencode --help`.
+1. `ddcli --help` and `ddcli --version` belong to DeputyDev.
+2. `ddcli pi --help` launches `pi --help`.
+3. `ddcli opencode --help` launches `opencode --help`.
 4. Every token after the harness token is preserved exactly, including order, empty strings, newlines, leading dashes, and a literal `--`.
 5. Harness options are never declared as Commander options.
 6. Unknown first positional tokens are launcher errors; arbitrary executable passthrough is forbidden.
@@ -231,13 +231,13 @@ If global launcher options before a harness are added later, implement a dedicat
 ### Launcher-owned commands
 
 ```text
-deputydev2 harnesses
-deputydev2 doctor [harness]
-deputydev2 paths
-deputydev2 setup <harness> [--import-auth]
-deputydev2 gc
-deputydev2 rollback
-deputydev2 uninstall
+ddcli harnesses
+ddcli doctor [harness]
+ddcli paths
+ddcli setup <harness> [--import-auth]
+ddcli gc
+ddcli rollback
+ddcli uninstall
 ```
 
 `doctor`, `paths`, `harnesses`, `rollback`, `uninstall`, `--help`, and `--version` remain available when a required-update gate blocks harness execution. Recovery and diagnostics must work offline.
@@ -356,8 +356,8 @@ Use an architecture test or a dependency graph tool. If dependency-cruiser is se
 ```text
 ~/.deputydev/
 ├── bin/
-│   ├── deputydev2
-│   └── deputydev2.prev
+│   ├── ddcli
+│   └── ddcli.prev
 ├── runtime/
 │   ├── current -> 1.4.2-a3f9c1
 │   └── 1.4.2-a3f9c1/
@@ -382,7 +382,7 @@ Use an architecture test or a dependency graph tool. If dependency-cruiser is se
 │               ├── state/
 │               └── provisioning.json
 ├── staged/
-│   ├── deputydev2
+│   ├── ddcli
 │   └── meta.json
 ├── locks/
 ├── state.json
@@ -390,11 +390,11 @@ Use an architecture test or a dependency graph tool. If dependency-cruiser is se
 └── hold.json
 ```
 
-The runtime key is `<version>-<short-asset-manifest-hash>`, not version alone. This makes repeated `0.0.0-dev` builds and republished development builds rematerialize when resource bytes change.
+The runtime key is `<version>-<short-asset-manifest-hash>`, not version alone. This makes repeated `0.1.0-dev` builds and republished development builds rematerialize when resource bytes change.
 
 Materialization creates the immutable versioned directory, then atomically replaces a temporary `runtime/current` symlink. Harness arguments always use `runtime/current/...`, not a versioned path, so persisted session metadata does not point permanently at an obsolete release.
 
-Keep old versioned directories because a running harness can still have one open. Runtime collection is explicit (`deputydev2 gc`), age-based (default retention: 30 days), and never runs on the launch path. It must not delete the current target or a directory known to be active.
+Keep old versioned directories because a running harness can still have one open. Runtime collection is explicit (`ddcli gc`), age-based (default retention: 30 days), and never runs on the launch path. It must not delete the current target or a directory known to be active.
 
 The home directory is created with mode `0700`. On POSIX, refuse updater/materialization writes if the root is owned by another UID or is group/world writable; `doctor` reports exact remediation.
 
@@ -444,7 +444,7 @@ A warm launch performs local stamp/path checks only and writes nothing.
 
 ## 8. Pi adapter, packages, and auth onboarding
 
-Pi does not expose named profiles. DeputyDev will create one fixed, mutable Pi data directory and override these values for every `deputydev2 pi` invocation:
+Pi does not expose named profiles. DeputyDev will create one fixed, mutable Pi data directory and override these values for every `ddcli pi` invocation:
 
 ```text
 PI_CODING_AGENT_DIR=${DEPUTYDEV_HOME}/pi
@@ -468,7 +468,7 @@ Reconciliation is append-only by server name. Existing definitions and user enab
 Ship explicit, consented first-run import:
 
 - On an interactive first launch, if managed auth is absent and a supported source auth file exists, explain the boundary and offer to copy only the auth material.
-- On print/piped/non-TTY launches, never prompt. Fail with an actionable instruction: `deputydev2 setup pi --import-auth`.
+- On print/piped/non-TTY launches, never prompt. Fail with an actionable instruction: `ddcli setup pi --import-auth`.
 - Copy rather than symlink so an atomic rewrite by the harness cannot replace the link unexpectedly.
 - Preserve restrictive permissions (`0600` for credential files), never overwrite newer managed credentials, record import provenance without secret values, and validate the exact format/version before copying.
 - `doctor pi` reports whether the dedicated Pi directory has usable credentials without printing providers, tokens, or file contents.
@@ -669,7 +669,7 @@ Optional updates never add a re-exec hop around the harness. Mandatory foregroun
 - OpenCode-specific profile variables and XDG-shadowed tool configs
 - DeputyDev home permissions/ownership
 - whether `~/.deputydev/bin` is on PATH
-- whether `command -v deputydev2` resolves to the managed binary rather than a shadowing package-manager copy
+- whether `command -v ddcli` resolves to the managed binary rather than a shadowing package-manager copy
 - platform/container status and remediation
 
 `uninstall` removes the managed binary and offers separate, explicit choices for the mutable Pi directory, OpenCode profiles, and cached runtimes. It never silently destroys auth/session data.
@@ -727,7 +727,7 @@ Use Bun's PTY support or a pinned PTY test dependency only after the Phase 0.5 s
 
 ### Materialization/data-directory tests
 
-Use temporary `DEPUTYDEV_HOME` roots to verify the exact Pi agent/session paths, environment overrides on all forwarded Pi commands, separation from `~/.pi/agent`, traversal rejection, concurrent first launches, content-hash invalidation for `0.0.0-dev`, atomic `current` replacement, interrupted writes, auth import permissions, and explicit age-based GC.
+Use temporary `DEPUTYDEV_HOME` roots to verify the exact Pi agent/session paths, environment overrides on all forwarded Pi commands, separation from `~/.pi/agent`, traversal rejection, concurrent first launches, content-hash invalidation for `0.1.0-dev`, atomic `current` replacement, interrupted writes, auth import permissions, and explicit age-based GC.
 
 ### Architecture tests
 
@@ -815,7 +815,7 @@ Delay optional background auto-staging until the OpenCode adapter is stable. Do 
 - Harness argv is preserved byte-for-byte at the token level, including `--`, whitespace, and newlines.
 - Commander cannot consume harness `--help`/`--version`.
 - OpenCode flag injection is subcommand-aware and golden-tested.
-- Every `deputydev2 pi` invocation uses `${DEPUTYDEV_HOME}/pi` for `PI_CODING_AGENT_DIR` and `${DEPUTYDEV_HOME}/pi/sessions` for `PI_CODING_AGENT_SESSION_DIR` without modifying `~/.pi/agent`.
+- Every `ddcli pi` invocation uses `${DEPUTYDEV_HOME}/pi` for `PI_CODING_AGENT_DIR` and `${DEPUTYDEV_HOME}/pi/sessions` for `PI_CODING_AGENT_SESSION_DIR` without modifying `~/.pi/agent`.
 - Both harnesses have an explicit first-run auth path for users with on-disk credentials.
 - OpenCode isolation does not silently hide known subprocess tool credentials/config, or `doctor` reports the verified fallback clearly.
 - Warm print/piped launches perform no network request.

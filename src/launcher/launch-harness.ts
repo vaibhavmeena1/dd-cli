@@ -37,7 +37,7 @@ export async function launchRegisteredHarness(
     throw new LauncherError(
       `failed to prepare the ${registration.id} profile`,
       LAUNCHER_EXIT_STATUS.profileFailure,
-      { cause: error, remediation: `Run deputydev2 doctor ${registration.id}.` },
+      { cause: error, remediation: `Run ddcli doctor ${registration.id}.` },
     );
   }
 
@@ -52,7 +52,7 @@ export async function launchRegisteredHarness(
     throw new LauncherError(
       `failed to build the ${registration.id} launch command`,
       LAUNCHER_EXIT_STATUS.profileFailure,
-      { cause: error, remediation: `Run deputydev2 doctor ${registration.id}.` },
+      { cause: error, remediation: `Run ddcli doctor ${registration.id}.` },
     );
   }
 
@@ -60,7 +60,7 @@ export async function launchRegisteredHarness(
     throw new LauncherError(
       `${registration.id} adapter attempted to replace the allowlisted executable`,
       LAUNCHER_EXIT_STATUS.executableUnavailable,
-      { remediation: `Run deputydev2 doctor ${registration.id}.` },
+      { remediation: `Run ddcli doctor ${registration.id}.` },
     );
   }
 

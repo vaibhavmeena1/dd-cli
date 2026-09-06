@@ -23,7 +23,7 @@ export async function spawnHarness(specification: LaunchSpec): Promise<never> {
     throw new LauncherError(
       `failed to start harness executable: ${specification.executable}`,
       LAUNCHER_EXIT_STATUS.executableUnavailable,
-      { cause: error, remediation: "Run deputydev2 doctor for executable diagnostics." },
+      { cause: error, remediation: "Run ddcli doctor for executable diagnostics." },
     );
   }
 
@@ -58,7 +58,7 @@ export async function spawnHarness(specification: LaunchSpec): Promise<never> {
     throw new LauncherError(
       `failed to start harness executable: ${specification.executable}`,
       LAUNCHER_EXIT_STATUS.executableUnavailable,
-      { cause: spawnError, remediation: "Run deputydev2 doctor for executable diagnostics." },
+      { cause: spawnError, remediation: "Run ddcli doctor for executable diagnostics." },
     );
   }
 

@@ -1,0 +1,194 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Existing pre-release tag to rebuild
+        required: true
+        type: string
+      replace_assets:
+        description: Explicitly replace existing release assets during recovery
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.release_version }}
+  cancel-in-progress: false
+
+env:
+  BUN_VERSION: 1.4.1
+  BUILD_TARGET: darwin-arm64
+  RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_version }}
+  RELEASE_BINARY_PATH: dist/ddcli-darwin-arm64
+  RELEASE_ARCHIVE_PATH: release/ddcli-darwin-arm64.gz
+  RELEASE_OUTPUT_DIR: release
+  RELEASE_SERVICE_ENVIRONMENT: production
+  REPLACE_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.replace_assets && 'true' || 'false' }}
+
+jobs:
+  release-darwin-arm64:
+    name: Build and publish darwin-arm64
+    runs-on: macos-15
+    timeout-minutes: 25
+    environment: production
+    env:
+      DEPUTYDEV_SERVICE_ORIGIN: ${{ vars.DEPUTYDEV_SERVICE_ORIGIN }}
+
+    steps:
+      - name: Check out exact release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.release_version }}
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Verify native Apple Silicon runner
+        run: test "$(uname -s)-$(uname -m)" = "Darwin-arm64"
+
+      - name: Load release details for recovery run
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_DETAILS_FILE: ${{ runner.temp }}/release.json
+        run: gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_VERSION}" > "$RELEASE_DETAILS_FILE"
+
+      - name: Validate release contract
+        env:
+          RELEASE_DETAILS_FILE: ${{ runner.temp }}/release.json
+        run: bun run scripts/validate-release.ts
+
+      - name: Verify tagged commit belongs to main
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          TAGGED_COMMIT=$(git rev-parse "refs/tags/${RELEASE_VERSION}^{commit}")
+          test "$(git rev-parse HEAD)" = "$TAGGED_COMMIT"
+          git merge-base --is-ancestor "$TAGGED_COMMIT" refs/remotes/origin/main
+          printf 'BUILD_COMMIT=%s\n' "$TAGGED_COMMIT" >> "$GITHUB_ENV"
+
+      - name: Validate production service origin
+        run: |
+          bun -e '
+            import { parseServiceOrigin } from "./src/product/service-origin.ts";
+            const value = process.env.DEPUTYDEV_SERVICE_ORIGIN;
+            if (value === undefined || value.trim() === "") throw new Error("DEPUTYDEV_SERVICE_ORIGIN must be set");
+            parseServiceOrigin(value, { allowLoopbackHttp: false });
+          '
+
+      - name: Refuse existing assets unless recovery replacement is explicit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh release view "$RELEASE_VERSION" --json assets --jq '.assets[].name')
+          for asset in \
+            ddcli-darwin-arm64.gz \
+            ddcli-darwin-arm64.map \
+            checksums.txt \
+            release-metadata.json \
+            VERSION \
+            install.sh
+          do
+            if printf '%s\n' "$existing" | grep -Fqx "$asset" && [ "$REPLACE_ASSETS" != "true" ]; then
+              echo "release asset already exists: $asset" >&2
+              echo "Use a workflow_dispatch recovery run with replace_assets enabled only after reviewing the failed release." >&2
+              exit 1
+            fi
+          done
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting, lint, and types
+        run: bun run check
+
+      - name: Run all tests
+        run: bun test
+
+      - name: Check installer shell syntax
+        run: sh -n install.sh
+
+      - name: Compile production executable
+        run: bun run build:release
+
+      - name: Verify architecture
+        run: |
+          test "$(lipo -archs "$RELEASE_BINARY_PATH")" = "arm64"
+          file "$RELEASE_BINARY_PATH"
+
+      - name: Ad-hoc sign and verify executable
+        run: |
+          codesign --force --sign - --timestamp=none "$RELEASE_BINARY_PATH"
+          codesign --verify --verbose=2 "$RELEASE_BINARY_PATH"
+
+      - name: Smoke-test signed executable
+        run: |
+          test "$("$RELEASE_BINARY_PATH" --version)" = "$RELEASE_VERSION"
+          "$RELEASE_BINARY_PATH" harnesses
+
+      - name: Package reproducible release assets
+        run: |
+          rm -rf "$RELEASE_OUTPUT_DIR"
+          mkdir -p "$RELEASE_OUTPUT_DIR"
+          COPYFILE_DISABLE=1 gzip -9 -n -c "$RELEASE_BINARY_PATH" > "$RELEASE_ARCHIVE_PATH"
+          gzip -t "$RELEASE_ARCHIVE_PATH"
+          cp "${RELEASE_BINARY_PATH}.map" "$RELEASE_OUTPUT_DIR/ddcli-darwin-arm64.map"
+          cp install.sh "$RELEASE_OUTPUT_DIR/install.sh"
+          cmp install.sh "$RELEASE_OUTPUT_DIR/install.sh"
+          bun run release:metadata
+
+      - name: Verify packaged hashes
+        run: |
+          expected_archive=$(awk '$2 == "ddcli-darwin-arm64.gz" { print $1 }' release/checksums.txt)
+          expected_binary=$(awk '$2 == "ddcli-darwin-arm64" { print $1 }' release/checksums.txt)
+          test "$(shasum -a 256 release/ddcli-darwin-arm64.gz | awk '{ print $1 }')" = "$expected_archive"
+          test "$(gzip -dc release/ddcli-darwin-arm64.gz | shasum -a 256 | awk '{ print $1 }')" = "$expected_binary"
+          test "$(cat release/VERSION)" = "$RELEASE_VERSION"
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$REPLACE_ASSETS" = "true" ]; then
+            gh release upload "$RELEASE_VERSION" --clobber \
+              release/ddcli-darwin-arm64.gz \
+              release/ddcli-darwin-arm64.map \
+              release/checksums.txt \
+              release/release-metadata.json \
+              release/VERSION \
+              release/install.sh
+          else
+            gh release upload "$RELEASE_VERSION" \
+              release/ddcli-darwin-arm64.gz \
+              release/ddcli-darwin-arm64.map \
+              release/checksums.txt \
+              release/release-metadata.json \
+              release/VERSION \
+              release/install.sh
+          fi
+
+      - name: Attest release executable archive
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: release/ddcli-darwin-arm64.gz
+
+      - name: Promote stable semantic versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version_without_build=${RELEASE_VERSION%%+*}
+          case "$version_without_build" in
+            *-*) echo "Keeping semantic pre-release $RELEASE_VERSION marked as a GitHub pre-release." ;;
+            *) gh release edit "$RELEASE_VERSION" --prerelease=false --latest ;;
+          esac

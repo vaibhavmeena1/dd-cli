@@ -10,7 +10,7 @@ Implemented:
 - Required floating entries for `pi-mcp-adapter` and `@juicesharp/rpiv-ask-user-question`, plus an exact `2.3.0` entry for `pi-provider-litellm`.
 - Content-addressed DeputyDev Pi resource materialization with checksum verification, atomic `runtime/current` activation, and a separately typechecked core extension.
 - Local settings/package inspection, enforced required entries, package provenance state, same-user locks, direct Pi install/remove subprocesses, exact-version fallback, minimum floors, and Pi/user-owned floating updates.
-- Automatic interactive provisioning, local-only non-interactive validation, forwarded Pi administration exemptions, explicit `deputydev2 setup pi --sync-packages`, and package-aware doctor output.
+- Automatic interactive provisioning, local-only non-interactive validation, forwarded Pi administration exemptions, explicit `ddcli setup pi --sync-packages`, and package-aware doctor output.
 - Tests covering schema safety, versions, settings preservation, fallback/revocation, package retirement/adoption, locking/concurrency, subprocess environment, resource activation, and launcher integration.
 
 Key implementation entry points:
@@ -23,8 +23,8 @@ Key implementation entry points:
 
 Remaining follow-up for the next session:
 
-1. Run `deputydev2 setup pi --sync-packages` against the selected real packages.
-2. Smoke-test an ordinary interactive Pi session and `deputydev2 pi update --extensions` for the floating entries.
+1. Run `ddcli setup pi --sync-packages` against the selected real packages.
+2. Smoke-test an ordinary interactive Pi session and `ddcli pi update --extensions` for the floating entries.
 3. Before release, confirm licenses/install scripts and test each selected package against the pinned Pi compatibility version.
 
 The first eligible synchronization installs the required entries; healthy warm launches continue to use local package and settings inspection only.
@@ -109,7 +109,7 @@ Planned validation rules:
 - Acquire a dedicated package lock, recheck state, then invoke the resolved Pi executable directly with the existing sanitized Pi environment when installation or repair is needed.
 - Exact packages update only when a new DeputyDev CLI release changes their exact policy. This requires `pi install npm:pkg@new-version`; Pi intentionally skips exact pins during `pi update --extensions`.
 - Minimum packages trigger repair only when missing, invalid, or locally below the embedded floor. Versions at or above the floor are accepted without a registry request and are never downgraded. Their range source remains eligible for native Pi/user updates.
-- Floating packages are kept as unversioned sources in Pi settings. DeputyDev accepts any valid installed version and neither checks the registry nor schedules updates. Pi may report available updates, and the user may run `deputydev2 pi update --extensions` or another native Pi update command at any time.
+- Floating packages are kept as unversioned sources in Pi settings. DeputyDev accepts any valid installed version and neither checks the registry nor schedules updates. Pi may report available updates, and the user may run `ddcli pi update --extensions` or another native Pi update command at any time.
 - If a user pins, filters, disables, removes, or weakens the source constraint of a required minimum/floating entry, the next eligible reconciliation restores the embedded required entry. If Pi/user updated its installed version while retaining the required source policy, DeputyDev accepts that version and refreshes only its observed local state.
 - Verify command exit status, configured source, installed package identity/version, and expected package location before committing state. Write state last.
 - On an interactive exact-version migration, preserve and launch the previously verified version if installing the newly embedded version fails. Restore its previous settings source and verify its package files before fallback; never launch an unverified or partially modified install.
@@ -118,11 +118,11 @@ Planned validation rules:
 
 ### Launch policy
 
-- Explicit setup command: `deputydev2 setup pi --sync-packages`.
+- Explicit setup command: `ddcli setup pi --sync-packages`.
 - The first ordinary interactive Pi launch automatically installs missing required packages before Pi starts and displays package identity plus progress. It does not ask for confirmation because these packages are declared product requirements, but installation risk is documented during DeputyDev installation/setup.
 - Warm ordinary launches do local checks only.
 - Pi administrative forwarding (`help`, `version`, `install`, `remove`, `update`, `list`, and `config`) does not recursively trigger package synchronization; the next ordinary launch repairs required state.
-- Non-interactive, print, JSON, RPC, piped, and CI launches never prompt or initiate package network activity. If a required package has no valid installed copy, fail with `deputydev2 setup pi --sync-packages` remediation.
+- Non-interactive, print, JSON, RPC, piped, and CI launches never prompt or initiate package network activity. If a required package has no valid installed copy, fail with `ddcli setup pi --sync-packages` remediation.
 - When a newly embedded exact version is not installed during a non-interactive launch, a non-revoked last-known-good version may run with a warning and setup remediation. Otherwise the launch blocks.
 - `PI_CODING_AGENT_DIR`, `PI_CODING_AGENT_SESSION_DIR`, `PI_SKIP_VERSION_CHECK=1`, and the Pi-only credential removals apply to package subprocesses as well as the final Pi process.
 
