@@ -16,7 +16,7 @@ concurrency:
 jobs:
   launcher-core:
     name: Launcher core checks
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 15
 
     steps:
