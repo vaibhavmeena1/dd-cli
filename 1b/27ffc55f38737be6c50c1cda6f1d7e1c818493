@@ -1,0 +1,145 @@
+tsconfig.base.json
+  s_dc8ad6651a65a4::t_c28d3b0bf78bec 22
+apps/cli/scripts/release-contract.ts
+  s_dc8ad6651a65a4::t_a40e6c4ce63ee3 1-89
+apps/frontend/src/components/ui/button.tsx
+  s_dc8ad6651a65a4::t_f41761f8232873 1,5-29
+  s_dc8ad6651a65a4::t_7ef5107da4d165 2-4,30
+apps/frontend/tsconfig.json
+  s_dc8ad6651a65a4::t_f2f52213add630 3,5-10
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 2
+  s_dc8ad6651a65a4::t_d5751b32a7e479 1,4,11
+apps/frontend/src/App.tsx
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 2,13
+  s_dc8ad6651a65a4::t_e4dcb03fa12c17 1,4-12
+  s_dc8ad6651a65a4::t_151cb7b6659a58 3
+apps/frontend/eslint.config.js
+  s_dc8ad6651a65a4::t_f4e05c9b2a2e2e 1-26
+apps/cli/tests/release-contract.test.ts
+  s_dc8ad6651a65a4::t_a40e6c4ce63ee3 1-75
+apps/cli/tests/installer/install.test.ts
+  s_dc8ad6651a65a4::t_a40e6c4ce63ee3 1-281
+apps/frontend/README.md
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 2,4,6,8,10,12,19,21,34
+  s_dc8ad6651a65a4::t_151cb7b6659a58 1,3,5,7,9,11,13-18,20,22-33,35
+apps/cli/package.json
+  s_dc8ad6651a65a4::t_c28d3b0bf78bec 1-37,39-56
+  s_dc8ad6651a65a4::t_1eea5c419b0408 38
+apps/frontend/package.json
+  s_dc8ad6651a65a4::t_11a22af20bd639 29,34-40,42
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 1,3,5-8,14-15,22,27-28,30-33,41,43-45
+  s_dc8ad6651a65a4::t_f4e05c9b2a2e2e 2,4,9-13
+  s_dc8ad6651a65a4::t_48f5fbf01267fd 17-21,23-26
+  s_dc8ad6651a65a4::t_e56e17d7edd08d 16
+apps/cli/scripts/validate-release.ts
+  s_dc8ad6651a65a4::t_a40e6c4ce63ee3 1-93
+apps/frontend/src/main.tsx
+  s_dc8ad6651a65a4::t_151cb7b6659a58 1-13,17
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 14-16
+apps/frontend/.prettierrc.json
+  s_dc8ad6651a65a4::t_f4e05c9b2a2e2e 1-4
+apps/frontend/vite.config.ts
+  s_dc8ad6651a65a4::t_577eff3bff3ae3 5
+  s_dc8ad6651a65a4::t_f2f52213add630 1-4,9-23
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 6-8
+package.json
+  s_dc8ad6651a65a4::t_eedabb7fcd6673 7-10
+  s_dc8ad6651a65a4::t_c28d3b0bf78bec 2-4,16,22,25
+  s_dc8ad6651a65a4::t_d567e048218085 17-19
+.claude/launch.json
+  s_dc8ad6651a65a4::t_48909ac23886f2 1-11
+apps/frontend/.gitignore
+  s_dc8ad6651a65a4::t_f4e05c9b2a2e2e 25-27
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 1-24
+apps/frontend/pnpm-workspace.yaml
+  s_dc8ad6651a65a4::t_48f5fbf01267fd 1-2
+apps/frontend/src/lib/utils.ts
+  s_dc8ad6651a65a4::t_f4e05c9b2a2e2e 1-6
+biome.json
+  s_dc8ad6651a65a4::t_f3206a972cd28a 9-10,35-37
+  s_0dcfb01a0ba692::t_e70b1cc91a6981 33-34,38-46
+apps/cli/src/harnesses/pi/resources/extensions/pi-org-telemetry.mjs
+  s_dc8ad6651a65a4::t_8841c999222ff9 1-267
+apps/frontend/public/favicon.svg
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 1
+apps/frontend/tsconfig.app.json
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 1-3,8-16,18-21,23-25,32-34
+  s_dc8ad6651a65a4::t_f2f52213add630 4-7,17,22,26-31
+.github/workflows/ci.yml
+  s_dc8ad6651a65a4::t_8aed1f9593d499 16-18,20-41,44-46,55,60-61,64
+apps/frontend/tsconfig.node.json
+  s_dc8ad6651a65a4::t_f2f52213add630 4,6,11-12,19,23-24
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 1-3,5,7-10,13-18,20-22,25-27
+apps/frontend/components.json
+  s_dc8ad6651a65a4::t_b132c7e26a0d99 13
+  s_dc8ad6651a65a4::t_161fe1e7a66b8b 1-12,14-25
+apps/cli/tsconfig.json
+  s_dc8ad6651a65a4::t_c28d3b0bf78bec 1-5
+apps/frontend/src/components/ui/button-variants.ts
+  s_dc8ad6651a65a4::t_7ef5107da4d165 1-36
+apps/frontend/src/index.css
+  s_dc8ad6651a65a4::t_55334a18266de7 9-130
+  s_dc8ad6651a65a4::t_f2f52213add630 1-2
+  s_dc8ad6651a65a4::t_fa7059c47e8480 3-8
+apps/cli/README.md
+  s_dc8ad6651a65a4::t_89af12e13eddab 1-244
+CLAUDE.md
+  s_dc8ad6651a65a4::t_03078b8e31e32a 112-117,120,122-123
+  s_dc8ad6651a65a4::t_274bc71909e723 118-119,121
+apps/cli/install.sh
+  s_dc8ad6651a65a4::t_a40e6c4ce63ee3 1-208
+apps/frontend/config_template.json
+  s_dc8ad6651a65a4::t_f2f52213add630 1-8
+apps/frontend/index.html
+  s_dc8ad6651a65a4::t_d903d8a3a59b61 1-6,8-13
+  s_dc8ad6651a65a4::t_151cb7b6659a58 7
+.github/workflows/release.yml
+  s_dc8ad6651a65a4::t_8aed1f9593d499 1-5,12-13,28,34-35,45,49-51,59,70-77,83-87,97,115,131-133,135,186,194,206-207,215-216
+apps/cli/scripts/generate-release-metadata.ts
+  s_dc8ad6651a65a4::t_a40e6c4ce63ee3 1-117
+apps/frontend/.prettierignore
+  s_dc8ad6651a65a4::t_f4e05c9b2a2e2e 1-3
+README.md
+  s_dc8ad6651a65a4::t_03078b8e31e32a 1,3,5,8,11-12,27,39,42-45,48,50,52,54-55
+  s_dc8ad6651a65a4::t_274bc71909e723 9-10,15,17,19,21,24-26,30,32-36
+  s_dc8ad6651a65a4::t_c3e38b7e1be0f4 56-58
+apps/cli/.env.example
+  s_dc8ad6651a65a4::t_3bff80ac3b5e1c 1-21,25-120
+apps/cli/docs/launcher-plan.md
+  s_dc8ad6651a65a4::t_1b7fc2cbb85754 14,31-32,628,785-793
+apps/cli/tsconfig.pi-resources.json
+  s_dc8ad6651a65a4::t_3775bed6557dcc 5,8-12
+apps/frontend/pnpm-lock.yaml
+  s_dc8ad6651a65a4::t_f17993f120f739 1-5905
+bun.lock
+  s_dc8ad6651a65a4::t_8e11b2bbf4627c 6-11,13-16,27-41,60,62,64,66,68,70,72,74,76,82,84,118,120,122,124,126,128,132,134,192-197,220-255,276,296,298,344-347,356,360,364-369,380-381,386-387,390-391,410-411,432-433,446-447,476-477,494-497,508,514-515,518-519,522-526,530
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "1b27ffc55f38737be6c50c1cda6f1d7e1c818493",
+  "prompts": {},
+  "humans": {
+    "h_cbc19accedcd8a": {
+      "author": "Vaibhav Meena <vaibhav.meena@1mg.com>"
+    }
+  },
+  "sessions": {
+    "s_0dcfb01a0ba692": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0a466-4cd9-7184-9583-f1715f53a087",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": null
+    },
+    "s_dc8ad6651a65a4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c3ac9c3c-a6f9-4f94-91ac-e33da2ee170c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vaibhav Meena <vaibhav.meena@1mg.com>"
+    }
+  }
+}
