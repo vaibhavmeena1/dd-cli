@@ -1,0 +1,56 @@
+{
+  "name": "deputydev-cli",
+  "version": "0.1.0",
+  "description": "Native DeputyDev launcher for supported coding harnesses (ddcli)",
+  "private": true,
+  "type": "module",
+  "module": "src/index.ts",
+  "bin": {
+    "ddcli": "src/index.ts"
+  },
+  "packageManager": "bun@1.4.1",
+  "engines": {
+    "bun": ">=1.4.1"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun run telemetry:check && bun build src/index.ts --compile --format=esm --bytecode --sourcemap=external --no-compile-autoload-dotenv --no-compile-autoload-bunfig --target=bun-darwin-arm64 --define 'BUILD_VERSION=\"0.1.0-dev\"' --define 'BUILD_KIND=\"dev\"' --define 'BUILD_TARGET=\"darwin-arm64\"' --define 'BUILD_COMMIT=\"local\"' --define 'BUILD_SERVICE_ORIGIN=\"http://localhost:3000\"' --outfile dist/ddcli",
+    "build:release": "bun run telemetry:check && bun run scripts/build-release.ts",
+    "telemetry:build": "bun run scripts/build-pi-telemetry.ts",
+    "telemetry:check": "bun run scripts/build-pi-telemetry.ts --check",
+    "release:validate": "bun run scripts/validate-release.ts",
+    "release:metadata": "bun run scripts/generate-release-metadata.ts",
+    "test": "bun test",
+    "test:installer": "bun test tests/installer",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.pi-resources.json",
+    "check": "bun run telemetry:check && bun run typecheck"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "commander": "14",
+    "consola": "^3.4.2",
+    "picocolors": "^1.1.1",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "@earendil-works/pi-coding-agent": "0.85.0",
+    "@earendil-works/pi-tui": "0.85.0",
+    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/api-logs": "0.222.0",
+    "@opentelemetry/core": "2.11.0",
+    "@opentelemetry/exporter-logs-otlp-grpc": "0.222.0",
+    "@opentelemetry/exporter-logs-otlp-proto": "0.222.0",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "0.222.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "0.222.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "0.222.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "0.222.0",
+    "@opentelemetry/resources": "2.11.0",
+    "@opentelemetry/sdk-logs": "0.222.0",
+    "@opentelemetry/sdk-metrics": "2.11.0",
+    "@opentelemetry/sdk-trace": "2.11.0",
+    "@opentelemetry/semantic-conventions": "1.43.0",
+    "@types/bun": "^1.4.0",
+    "typescript": "^7.0.2"
+  }
+}

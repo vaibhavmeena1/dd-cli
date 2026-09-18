@@ -1,12 +1,16 @@
-name: Release
+name: Release CLI
+
+# GitHub Releases are repository-wide. Every component in this monorepo
+# namespaces its tags; this workflow only handles `cli-<version>` tags and
+# exits early for anything else.
 
 on:
   release:
     types: [published]
   workflow_dispatch:
     inputs:
-      release_version:
-        description: Existing pre-release tag to rebuild
+      release_tag:
+        description: Existing pre-release tag to rebuild, for example cli-0.2.0
         required: true
         type: string
       replace_assets:
@@ -21,13 +25,14 @@ permissions:
   attestations: write
 
 concurrency:
-  group: release-${{ github.event.release.tag_name || inputs.release_version }}
+  group: release-${{ github.event.release.tag_name || inputs.release_tag }}
   cancel-in-progress: false
 
 env:
   BUN_VERSION: 1.4.1
   BUILD_TARGET: darwin-arm64
-  RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_version }}
+  CLI_DIR: apps/cli
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
   RELEASE_BINARY_PATH: dist/ddcli-darwin-arm64
   RELEASE_ARCHIVE_PATH: release/ddcli-darwin-arm64.gz
   RELEASE_OUTPUT_DIR: release
@@ -37,9 +42,13 @@ env:
 jobs:
   release-darwin-arm64:
     name: Build and publish darwin-arm64
+    if: startsWith(github.event.release.tag_name || inputs.release_tag, 'cli-')
     runs-on: macos-26
     timeout-minutes: 25
     environment: production
+    defaults:
+      run:
+        working-directory: apps/cli
     env:
       DEPUTYDEV_SERVICE_ORIGIN: ${{ vars.DEPUTYDEV_SERVICE_ORIGIN }}
 
@@ -47,7 +56,7 @@ jobs:
       - name: Check out exact release tag
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.release.tag_name || inputs.release_version }}
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
           fetch-depth: 0
 
       - name: Set up Bun
@@ -58,12 +67,24 @@ jobs:
       - name: Verify native Apple Silicon runner
         run: test "$(uname -s)-$(uname -m)" = "Darwin-arm64"
 
+      - name: Derive CLI version from namespaced tag
+        run: |
+          case "$RELEASE_TAG" in
+            cli-*) ;;
+            *) echo "release tag must start with cli-: $RELEASE_TAG" >&2; exit 1 ;;
+          esac
+          printf 'RELEASE_VERSION=%s\n' "${RELEASE_TAG#cli-}" >> "$GITHUB_ENV"
+
       - name: Load release details for recovery run
         if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_DETAILS_FILE: ${{ runner.temp }}/release.json
-        run: gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_VERSION}" > "$RELEASE_DETAILS_FILE"
+        run: gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" > "$RELEASE_DETAILS_FILE"
+
+      - name: Install workspace dependencies
+        working-directory: .
+        run: bun install --frozen-lockfile
 
       - name: Validate release contract
         env:
@@ -73,7 +94,7 @@ jobs:
       - name: Verify tagged commit belongs to main
         run: |
           git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
-          TAGGED_COMMIT=$(git rev-parse "refs/tags/${RELEASE_VERSION}^{commit}")
+          TAGGED_COMMIT=$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")
           test "$(git rev-parse HEAD)" = "$TAGGED_COMMIT"
           git merge-base --is-ancestor "$TAGGED_COMMIT" refs/remotes/origin/main
           printf 'BUILD_COMMIT=%s\n' "$TAGGED_COMMIT" >> "$GITHUB_ENV"
@@ -91,7 +112,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          existing=$(gh release view "$RELEASE_VERSION" --json assets --jq '.assets[].name')
+          existing=$(gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name')
           for asset in \
             ddcli-darwin-arm64.gz \
             ddcli-darwin-arm64.map \
@@ -107,10 +128,11 @@ jobs:
             fi
           done
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Check formatting and lint across the workspace
+        working-directory: .
+        run: bunx biome ci .
 
-      - name: Check formatting, lint, and types
+      - name: Check telemetry bundle and types
         run: bun run check
 
       - name: Run all tests
@@ -161,7 +183,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "$REPLACE_ASSETS" = "true" ]; then
-            gh release upload "$RELEASE_VERSION" --clobber \
+            gh release upload "$RELEASE_TAG" --clobber \
               release/ddcli-darwin-arm64.gz \
               release/ddcli-darwin-arm64.map \
               release/checksums.txt \
@@ -169,7 +191,7 @@ jobs:
               release/VERSION \
               release/install.sh
           else
-            gh release upload "$RELEASE_VERSION" \
+            gh release upload "$RELEASE_TAG" \
               release/ddcli-darwin-arm64.gz \
               release/ddcli-darwin-arm64.map \
               release/checksums.txt \
@@ -181,7 +203,8 @@ jobs:
       - name: Attest release executable archive
         uses: actions/attest-build-provenance@v3
         with:
-          subject-path: release/ddcli-darwin-arm64.gz
+          # `uses:` steps ignore the job's working-directory default.
+          subject-path: apps/cli/release/ddcli-darwin-arm64.gz
 
       - name: Promote stable semantic versions
         env:
@@ -189,6 +212,6 @@ jobs:
         run: |
           version_without_build=${RELEASE_VERSION%%+*}
           case "$version_without_build" in
-            *-*) echo "Keeping semantic pre-release $RELEASE_VERSION marked as a GitHub pre-release." ;;
-            *) gh release edit "$RELEASE_VERSION" --prerelease=false --latest ;;
+            *-*) echo "Keeping semantic pre-release $RELEASE_TAG marked as a GitHub pre-release." ;;
+            *) gh release edit "$RELEASE_TAG" --prerelease=false --latest ;;
           esac

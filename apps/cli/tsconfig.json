@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "index.ts"],
+  "exclude": ["dist", "node_modules", "src/harnesses/pi/resources", "src/harnesses/pi/telemetry"]
+}

@@ -1,42 +1,27 @@
 {
-  "name": "deputydev-cli",
-  "version": "0.1.0",
-  "description": "Native DeputyDev launcher for supported coding harnesses",
+  "name": "deputydev",
+  "version": "0.0.0",
+  "description": "DeputyDev monorepo: the ddcli launcher plus the centralized management backend and frontend",
   "private": true,
   "type": "module",
-  "module": "src/index.ts",
-  "bin": {
-    "ddcli": "src/index.ts"
-  },
+  "workspaces": [
+    "apps/cli",
+    "packages/*"
+  ],
   "packageManager": "bun@1.4.1",
   "engines": {
     "bun": ">=1.4.1"
   },
   "scripts": {
-    "dev": "bun run src/index.ts",
-    "build": "bun build src/index.ts --compile --format=esm --bytecode --sourcemap=external --no-compile-autoload-dotenv --no-compile-autoload-bunfig --target=bun-darwin-arm64 --define 'BUILD_VERSION=\"0.1.0-dev\"' --define 'BUILD_KIND=\"dev\"' --define 'BUILD_TARGET=\"darwin-arm64\"' --define 'BUILD_COMMIT=\"local\"' --define 'BUILD_SERVICE_ORIGIN=\"http://localhost:3000\"' --outfile dist/ddcli",
-    "build:release": "bun run scripts/build-release.ts",
-    "release:validate": "bun run scripts/validate-release.ts",
-    "release:metadata": "bun run scripts/generate-release-metadata.ts",
-    "test": "bun test",
-    "test:installer": "bun test tests/installer",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.pi-resources.json",
+    "cli": "bun run --cwd apps/cli dev",
+    "check": "bun run --filter './apps/*' check && biome ci .",
+    "typecheck": "bun run --filter './apps/*' typecheck",
+    "test": "bun run --filter './apps/*' test",
     "lint": "biome lint .",
     "format": "biome format . --write",
-    "format:check": "biome format .",
-    "check": "bun run typecheck && biome ci ."
-  },
-  "dependencies": {
-    "@clack/prompts": "^1.7.0",
-    "commander": "14",
-    "consola": "^3.4.2",
-    "picocolors": "^1.1.1",
-    "zod": "^4.5.4"
+    "format:check": "biome format ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.12",
-    "@earendil-works/pi-coding-agent": "0.85.0",
-    "@types/bun": "^1.4.0",
-    "typescript": "^7.0.2"
+    "@biomejs/biome": "2.5.12"
   }
 }

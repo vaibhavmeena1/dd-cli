@@ -1,0 +1,36 @@
+target-version = "py312"
+line-length = 120
+indent-width = 4
+
+[lint]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+select = [
+    "E4",
+    "E7",
+    "E9",
+    "F",
+    "ERA001",
+    "BLE001",
+    "PTH",
+    "ANN001",
+    "ANN002",
+    "ANN003",
+    "ANN201",
+    "ANN202",
+    "ANN204",
+    "ANN205",
+    "ANN206",
+    "C901",
+    "N",
+    "ASYNC",
+    "I",
+    "T20",
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+skip-magic-trailing-comma = false
+line-ending = "auto"

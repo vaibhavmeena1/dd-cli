@@ -1,0 +1,99 @@
+import deputyDevOpenCodePluginAsset from "../harnesses/opencode/resources/plugins/deputydev-core/index.mjs" with {
+  type: "file",
+};
+import deputyDevExtensionAsset from "../harnesses/pi/resources/extensions/deputydev.ts" with {
+  type: "file",
+};
+import piOrgTelemetryExtensionAsset from "../harnesses/pi/resources/extensions/pi-org-telemetry.mjs" with {
+  type: "file",
+};
+
+import {
+  type OpenCodeResourceManifestEntry,
+  type PiResourceManifestEntry,
+  parseDeputyDevManifest,
+} from "../harnesses/pi/setup/packages/manifest.ts";
+
+const DEPUTYDEV_CORE_RESOURCE = Object.freeze({
+  id: "deputydev-core",
+  type: "extension",
+  destination: "pi/extensions/deputydev.ts",
+}) satisfies PiResourceManifestEntry;
+
+const PI_ORG_TELEMETRY_RESOURCE = Object.freeze({
+  id: "pi-org-telemetry",
+  type: "extension",
+  destination: "pi/extensions/pi-org-telemetry.mjs",
+}) satisfies PiResourceManifestEntry;
+
+const DEPUTYDEV_OPENCODE_CORE_RESOURCE = Object.freeze({
+  id: "deputydev-opencode-core",
+  plugin: "deputydev-core",
+  destination: "index.js",
+}) satisfies OpenCodeResourceManifestEntry;
+
+export const DEPUTYDEV_MANIFEST = parseDeputyDevManifest({
+  schemaVersion: 1,
+  revision: "3",
+  pi: {
+    packages: [
+      {
+        id: "pi-mcp-adapter",
+        source: "npm:pi-mcp-adapter",
+        required: true,
+        versionPolicy: { kind: "exact", version: "2.34.0" },
+        install: { action: "pi.install" },
+      },
+      {
+        id: "rpiv-ask-user-question",
+        source: "npm:@juicesharp/rpiv-ask-user-question",
+        required: true,
+        versionPolicy: { kind: "floating" },
+        install: { action: "pi.install" },
+        updates: { owner: "pi-or-user" },
+      },
+      {
+        id: "pi-provider-litellm",
+        source: "npm:pi-provider-litellm",
+        required: true,
+        versionPolicy: { kind: "exact", version: "3.0.1" },
+        install: { action: "pi.install" },
+      },
+    ],
+    resources: [DEPUTYDEV_CORE_RESOURCE, PI_ORG_TELEMETRY_RESOURCE],
+  },
+  opencode: {
+    // Public npm plugins enabled for OpenCode sessions. Entries are added as
+    // packages are vetted; the pipeline (pinned specifiers generated from the
+    // version policy) is exercised by the extension tests.
+    plugins: [],
+    resources: [DEPUTYDEV_OPENCODE_CORE_RESOURCE],
+  },
+});
+
+export interface EmbeddedPiResource extends PiResourceManifestEntry {
+  readonly sourcePath: string;
+}
+
+export const EMBEDDED_PI_RESOURCES = Object.freeze([
+  Object.freeze({
+    ...DEPUTYDEV_CORE_RESOURCE,
+    // TypeScript resolves the source module while Bun's `file` loader returns its asset path.
+    sourcePath: deputyDevExtensionAsset as unknown as string,
+  }),
+  Object.freeze({
+    ...PI_ORG_TELEMETRY_RESOURCE,
+    sourcePath: piOrgTelemetryExtensionAsset as unknown as string,
+  }),
+] as const satisfies readonly EmbeddedPiResource[]);
+
+export interface EmbeddedOpenCodeResource extends OpenCodeResourceManifestEntry {
+  readonly sourcePath: string;
+}
+
+export const EMBEDDED_OPENCODE_RESOURCES = Object.freeze([
+  Object.freeze({
+    ...DEPUTYDEV_OPENCODE_CORE_RESOURCE,
+    sourcePath: deputyDevOpenCodePluginAsset as unknown as string,
+  }),
+] as const satisfies readonly EmbeddedOpenCodeResource[]);

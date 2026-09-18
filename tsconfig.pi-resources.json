@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "types": ["bun"]
-  },
-  "include": ["src/harnesses/pi/resources/**/*.ts"],
-  "exclude": ["dist", "node_modules"]
-}

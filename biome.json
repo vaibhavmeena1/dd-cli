@@ -6,7 +6,8 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": true
+    "ignoreUnknown": true,
+    "includes": ["**", "!apps/backend", "!apps/frontend"]
   },
   "formatter": {
     "enabled": true,
@@ -29,6 +30,20 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["apps/cli/src/harnesses/pi/resources/extensions/pi-org-telemetry.mjs"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      },
+      "assist": {
+        "enabled": false
+      }
+    }
+  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "double",

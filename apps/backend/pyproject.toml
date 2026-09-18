@@ -1,0 +1,24 @@
+[project]
+name = "deputydev-console-backend"
+version = "0.1.0"
+description = "Centralized management API for DeputyDev CLI installations"
+authors = [{ name = "1mg Backend Team", email = "backend-team@1mg.com" }]
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "vortex @ git+ssh://git@bitbucket.org/tata1mg/vortex.git@3.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.0",
+    "ruff==0.14.10",
+]
+
+[tool.pytest.ini_options]
+addopts = ["-ra", "--strict-config", "--strict-markers"]
+testpaths = ["tests"]
+
+[tool.uv]
+package = false

@@ -1,0 +1,54 @@
+{
+  "NAME": "deputydev-console-backend",
+  "HTTP_VERSION": "1.0.0",
+  "HOST": "0.0.0.0",
+  "PORT": 3000,
+  "WORKERS": 1,
+  "DEBUG": true,
+  "LOG_LEVEL": "INFO",
+  "ENABLE_APP_CORS": true,
+  "CORS_ORIGINS": [
+    "http://localhost:8010"
+  ],
+  "INTERSERVICE_TIMEOUT": 10,
+  "JWT_SECRET": "replace-with-a-local-secret",
+  "DATABASE": {
+    "DEPUTYDEV_DATABASE": {
+      "DB_NAME": "deputydev",
+      "DB_HOST": "localhost",
+      "DB_PORT": 5432,
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "",
+      "DB_POOL_MAX_SIZE": 10,
+      "DB_POOL_MIN_SIZE": 1
+    }
+  },
+  "REDIS_CACHE_HOSTS": {
+    "deputydev": {
+      "REDIS_HOST": "localhost",
+      "REDIS_PORT": 6379,
+      "LABEL": "global",
+      "CONN_LIMIT": 20
+    }
+  },
+  "APM": {
+    "ENABLED": false,
+    "ENVIRONMENT": "local",
+    "SECRET_TOKEN": "",
+    "SERVER_TIMEOUT": "30s",
+    "SERVER_URL": "localhost",
+    "SPAN_FRAMES_MIN_DURATION": "10ms",
+    "TRANSACTION_SAMPLE_RATE": 0.1
+  },
+  "SENTRY": {
+    "DSN": "",
+    "SERVICE_NAME": "deputydev-console-backend"
+  },
+  "OPEN_TELEMETRY": {
+    "ENABLED": false,
+    "SERVICE_NAME": "deputydev-console-backend",
+    "ENDPOINT": "",
+    "EVENT_LOOP_MONITORING": true,
+    "SAMPLING_RATE": 0.1
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "NAME": "deputydev-console",
+  "env": "local",
+  "port": 8010,
+  "REQUEST_TIMEOUT": 10000,
+  "VITE_BASE_PATH": "/",
+  "BASE_API_URL": "http://localhost:3000"
+}
